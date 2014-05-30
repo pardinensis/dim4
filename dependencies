@@ -1,0 +1,20 @@
+GLM (math library)
+	apt-get install
+		libglm-dev
+
+GLFW (framework context)
+	apt-get install
+		libxrandr-dev
+		libxi-dev
+		libxcursor
+		cmake
+		doxygen
+	
+	download source code from http://www.glfw.org/download.html
+	extract
+	mkdir build
+	cd build
+	cmake ..
+	make && make install
+
+
