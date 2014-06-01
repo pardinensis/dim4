@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <chrono>
@@ -50,4 +51,21 @@ void info(const std::string& msg) {
 
 	std::cout << info << std::endl;
 	log(info);
+}
+
+
+
+void count_fps(double update_interval, const std::function<void(const std::string&)>& output) {
+	using namespace std::chrono;
+	static auto last_check = steady_clock::now();
+	static int n_counts = 0;
+	duration<double> elapsed = steady_clock::now() - last_check;
+	if (elapsed.count() > update_interval) {
+		std::stringstream ss;
+		ss << "FPS: " << std::setprecision(3) << std::fixed << n_counts / elapsed.count();
+		output(ss.str());
+		last_check = steady_clock::now();
+		n_counts = 0;
+	}
+	++n_counts;
 }

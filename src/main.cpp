@@ -8,6 +8,8 @@ using namespace glm;
 
 // include log tools
 #include "utils.hpp"
+#include <sstream>
+#include <string>
 
 
 
@@ -19,11 +21,27 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
 }
 
 
+int viewport_width = 640;
+int viewport_height = 480;
+void resize(GLFWwindow* window, int width, int height) {
+	viewport_width = width;
+	viewport_height = height;
+}
+
 int main(int argc, char** argv) {
 // init GLFW
 	log("initialize GLFW");
 	if (!glfwInit())
 		error("glfwInit failed");
+
+// set error callback
+	auto error_callback = [](int code, const char* desc) {
+		std::stringstream ss;
+		ss << "[GLFW] " << code << " " << desc;
+		error(ss.str());
+	};
+	glfwSetErrorCallback(error_callback);
+
 
 // create main window
 	log("create window");
@@ -32,12 +50,18 @@ int main(int argc, char** argv) {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	GLFWwindow* main_window = glfwCreateWindow(640, 480, "dim4", NULL, NULL);
+	GLFWmonitor* mon = glfwGetPrimaryMonitor();
+	const GLFWvidmode* vmode = glfwGetVideoMode(mon);
+	GLFWwindow* main_window = glfwCreateWindow(vmode->width, vmode->height, "dim4", mon, NULL);
 	if (!main_window) {
 		glfwTerminate();
 		error("glfwCreateWindow failed");
 	}
 	glfwMakeContextCurrent(main_window);
+
+// set window resize callback
+	glfwSetWindowSizeCallback(main_window, resize);
+
 
 // init glew extension handler
 	log("initialize GLEW");
@@ -52,11 +76,15 @@ int main(int argc, char** argv) {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+// set keyboard callback
 	glfwSetKeyCallback(main_window, key);
 
+// start main loop
 	glfwSwapInterval(1); //vsync
 	while (!glfwWindowShouldClose(main_window)) {
-
+		count_fps(1.0, info);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, viewport_width, viewport_height);
 
 		glfwSwapBuffers(main_window);
 		glfwPollEvents();
